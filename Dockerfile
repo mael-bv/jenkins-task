@@ -1,16 +1,24 @@
+# Utiliser une image Alpine pour un conteneur léger
 FROM alpine:latest
 
-# Installer Python, pip, et les packages requis
-RUN apk add --no-cache python3 py3-pip bash py3-requests py3-flask
+# Installer Python et pip
+RUN apk add --no-cache python3 py3-pip bash
 
-# Ajouter et installer les dépendances supplémentaires si nécessaire
+# Créer un environnement virtuel et installer les dépendances dans cet environnement
+RUN python3 -m venv /opt/venv \
+    && . /opt/venv/bin/activate \
+    && pip install --upgrade pip
+
+# Ajouter et installer les dépendances supplémentaires
 ADD ./webapp/requirements.txt /tmp/requirements.txt
-RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
+RUN . /opt/venv/bin/activate && pip install --no-cache-dir -r /tmp/requirements.txt
 
-# Ajouter votre application ou autres configurations
+# Ajouter l'environnement virtuel au PATH
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Ajouter l'application
 COPY ./webapp /app
 WORKDIR /app
 
-# Démarrer l'application (remplacez par la commande de démarrage de votre app)
+# Démarrer l'application
 CMD ["python3", "app.py"]
-
